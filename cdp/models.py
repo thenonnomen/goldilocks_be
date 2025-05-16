@@ -25,6 +25,7 @@ FIDELITY_CHOICES = (
     ("Medium", "Medium"),
     ("Low", "Low")
 )
+
 class PrimaryCompanyInfo(models.Model):
     company_name = models.CharField(max_length=255)
     company_domain = models.URLField()
