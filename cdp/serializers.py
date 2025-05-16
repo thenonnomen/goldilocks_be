@@ -29,3 +29,6 @@ class PrimaryCompanyInfoSerializer(serializers.ModelSerializer):
     class Meta:
         model = PrimaryCompanyInfo
         fields = '__all__'
+
+class ExcelUploadSerializer(serializers.Serializer):
+    file = serializers.FileField()
