@@ -1,4 +1,5 @@
 from django.db import models
+from django.contrib.auth.models import User
 
 # Create your models here.
 class GoldilocksCDP(models.Model):
@@ -109,3 +110,12 @@ class BusinessTracker(models.Model):
 
     def __str__(self):
         return f"Web traffic for {self.primary_info.company_name}"
+
+class UserSearchPrompts(models.Model):
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+    prompt = models.TextField(blank=True, null=True)
+    created_filters = models.TextField(blank=True, null=True)
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-timestamp']

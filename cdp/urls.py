@@ -2,7 +2,7 @@ from rest_framework import routers
 from .views import (
                     GoldilocksCDPViewSet, PrimaryCompanyInfoViewSet,
                     SecondaryCompanyInfoViewSet, FinancialInfoViewSet, 
-                    BusinessTrackerViewSet
+                    BusinessTrackerViewSet, PromptQueryAPIView
                     )
 from django.urls import include, path
 

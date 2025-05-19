@@ -2,7 +2,7 @@ from django.shortcuts import render
 
 # Create your views here.
 from rest_framework import viewsets
-from .models import GoldilocksCDP, PrimaryCompanyInfo, SecondaryCompanyInfo, FinancialInfo, BusinessTracker
+from .models import GoldilocksCDP, PrimaryCompanyInfo, SecondaryCompanyInfo, FinancialInfo, BusinessTracker, UserSearchPrompts
 from .serializers import (  
     GoldilocksCDPSerializer,
     PrimaryCompanyInfoSerializer,
@@ -16,6 +16,10 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 import re
+from .nlp_utils import extract_filters
+from rest_framework_simplejwt.tokens import RefreshToken, TokenError
+from rest_framework.permissions import IsAuthenticated
+
 
 class GoldilocksCDPViewSet(viewsets.ModelViewSet):
     queryset = GoldilocksCDP.objects.all()
@@ -176,3 +180,32 @@ def safe_float(value, default=0.0):
         return float(value)
     except (ValueError, TypeError):
         return default
+
+class PromptQueryAPIView(APIView):
+    def post(self, request):
+        prompt = request.data.get("prompt", "")
+
+        filters, limit = extract_filters(prompt)
+        queryset = PrimaryCompanyInfo.objects.filter(**filters).distinct()[:limit]
+
+        UserSearchPrompts.objects.create(
+            user = request.user,
+            prompt = prompt,
+            created_filters = filters
+        )
+        serializer = PrimaryCompanyInfoSerializer(queryset, many=True)
+        return Response(serializer.data)
+    
+class LogoutView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        try:
+            refresh_token = request.data["refresh"]
+            token = RefreshToken(refresh_token)
+            token.blacklist()  # Invalidate the refresh token
+            return Response(status=status.HTTP_205_RESET_CONTENT)
+        except KeyError:
+            return Response({"detail": "Refresh token is required"}, status=status.HTTP_400_BAD_REQUEST)
+        except TokenError as e:
+            return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
