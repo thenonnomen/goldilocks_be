@@ -10,6 +10,8 @@ from .serializers import (
     FinancialInfoSerializer,
     BusinessTrackerSerializer,
     ExcelUploadSerializer,
+    CustomTokenObtainPairSerializer,
+    CustomTokenRefreshSerializer,
 )
 import pandas as pd
 from rest_framework.views import APIView
@@ -19,6 +21,7 @@ import re
 from .nlp_utils import extract_filters
 from rest_framework_simplejwt.tokens import RefreshToken, TokenError
 from rest_framework.permissions import IsAuthenticated
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 
 class GoldilocksCDPViewSet(viewsets.ModelViewSet):
@@ -204,8 +207,15 @@ class LogoutView(APIView):
             refresh_token = request.data["refresh"]
             token = RefreshToken(refresh_token)
             token.blacklist()  # Invalidate the refresh token
+            request.session.flush()
             return Response(status=status.HTTP_205_RESET_CONTENT)
         except KeyError:
             return Response({"detail": "Refresh token is required"}, status=status.HTTP_400_BAD_REQUEST)
         except TokenError as e:
             return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        
+class CustomTokenObtainPairView(TokenObtainPairView):
+    serializer_class = CustomTokenObtainPairSerializer
+
+class CustomTokenRefreshView(TokenRefreshView):
+    serializer_class = CustomTokenRefreshSerializer
