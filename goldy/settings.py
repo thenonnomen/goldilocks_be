@@ -62,6 +62,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'cdp.middleware.RequestLoggingMiddleware', #Custom middleware to store user actions.
 ]
 
 ROOT_URLCONF = 'goldy.urls'

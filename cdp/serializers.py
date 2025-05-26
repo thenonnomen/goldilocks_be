@@ -1,5 +1,6 @@
 from rest_framework import serializers
-from .models import GoldilocksCDP, PrimaryCompanyInfo, SecondaryCompanyInfo, FinancialInfo, BusinessTracker
+from .models import (GoldilocksCDP, PrimaryCompanyInfo, SecondaryCompanyInfo, 
+                     FinancialInfo, BusinessTracker, UserHistory)
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer, TokenRefreshSerializer
 from rest_framework_simplejwt.settings import api_settings
 
@@ -82,3 +83,8 @@ class CustomTokenRefreshSerializer(TokenRefreshSerializer):
             data['currency'] = request.session.get('currency')
 
         return data
+    
+class UserHistorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserHistory
+        fields = ['id', 'method', 'path', 'headers', 'body', 'user', 'timestamp']

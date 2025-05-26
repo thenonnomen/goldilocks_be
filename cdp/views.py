@@ -2,7 +2,8 @@ from django.shortcuts import render
 
 # Create your views here.
 from rest_framework import viewsets
-from .models import GoldilocksCDP, PrimaryCompanyInfo, SecondaryCompanyInfo, FinancialInfo, BusinessTracker, UserSearchPrompts
+from .models import (GoldilocksCDP, PrimaryCompanyInfo, SecondaryCompanyInfo, 
+                    FinancialInfo, BusinessTracker, UserSearchPrompts, UserHistory)
 from .serializers import (  
     GoldilocksCDPSerializer,
     PrimaryCompanyInfoSerializer,
@@ -12,11 +13,12 @@ from .serializers import (
     ExcelUploadSerializer,
     CustomTokenObtainPairSerializer,
     CustomTokenRefreshSerializer,
+    UserHistorySerializer,
 )
 import pandas as pd
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework import status
+from rest_framework import status, viewsets
 import re, requests, json
 from .nlp_utils import extract_filters, extract_bracketed_names, extract_summary_json_from_ollama_response
 from rest_framework_simplejwt.tokens import RefreshToken, TokenError
@@ -24,9 +26,10 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
-
-
+from django.http import JsonResponse
 import chromadb
+import time
+
 client = chromadb.Client()
 collection = client.get_or_create_collection(name="user_prompts")
 
@@ -251,39 +254,35 @@ class PromptQueryAPIView(APIView):
 
         except requests.exceptions.RequestException as e:
             print("Request failed:", e)
-        # response = requests.post(url=url, headers=headers, data=json.dumps(data))
-        # import pdb; pdb.set_trace()
-        # if response.status_code == 200:
-        #     response_text = json.loads(response.text)
-        #     linked_response = response_text['response']
-        #     print(linked_response)
-        # else:
-        #     print("Error: ", response.status_code, response.text)
 
         extracted_companies = extract_summary_json_from_ollama_response(response.text)
-        print("COmpanies list ====> " + str(extracted_companies))
+        print("Companies list ====> " + str(extracted_companies))
         # json.loads(response.text)['response']
+
+        ollama_company_names = [entry['name'] for entry in extracted_companies[1]['summary_json']]
+
+        in_house_data = PrimaryCompanyInfo.objects.filter(company_name__in=ollama_company_names)
+
         chroma_db_id = UserSearchPrompts.objects.filter(user=request.user).latest('timestamp').id
 
+        unique_id = f"{request.user.id}_{chroma_db_id}_{int(time.time() * 1000)}"
+
         add_to_chromadb = collection.add(
-            ids= str(request.user.id) + '_' + str(chroma_db_id),  # Unique ID
+            ids= unique_id,
             documents=[prompt["query"]],
             metadatas=[{
                 "query_user_id": request.user.id,
                 "filters": json.dumps(prompt["filters"])
             }]
         )
-
-        results = collection.query(
-            query_texts=["FMCG middle market India"],
-            n_results=3,
-            where={"ids":str(request.user.id) + '_' + str(chroma_db_id)}
-        )
-
         import pdb; pdb.set_trace()
+        if len(in_house_data) == 0:
+            response_data = {"ollama_data":extracted_companies[0], "orm_data":"No companies were found in the In House Database.", 
+                             "fetched_companies":ollama_company_names, "status":200}
+        else:
+            response_data = {"ollama_data":extracted_companies[0], "orm_data":in_house_data, "fetched_companies":ollama_company_names, "status":200}
 
-        serializer = PrimaryCompanyInfoSerializer(queryset, many=True)
-        return Response(serializer.data)
+        return JsonResponse(response_data)
     
 class LogoutView(APIView):
     permission_classes = [IsAuthenticated]
@@ -310,3 +309,10 @@ class CustomTokenRefreshView(TokenRefreshView):
 Setup Chroma DB, Query API should be processed by NLP, Store filters in UserSearchPrompt Model, Then send query to Ollama, 
 once ollama sends resposnse, Store query in ChromaDB, Then send the Ollama response as API response.
 """
+
+class UserHistoryViewSet(viewsets.ReadOnlyModelViewSet):  # ReadOnly to prevent POST/PUT/DELETE
+    serializer_class = UserHistorySerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return UserHistory.objects.filter(user=self.request.user).order_by('-timestamp')

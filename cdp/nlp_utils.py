@@ -163,38 +163,77 @@ def extract_bracketed_names(response_text):
         return [name.strip() for name in match.group(1).split(',')]
     return []
 
+# import json
+# import re
+# from typing import Optional, Dict
+
+# def extract_summary_json_from_ollama_response(raw_response: str) -> Optional[Dict]:
+#     """
+#     Extracts the summary_json block from Ollama's stringified JSON response.
+
+#     Parameters:
+#         raw_response (str): The full response string returned from Ollama.
+
+#     Returns:
+#         Optional[Dict]: Parsed summary_json dictionary if found, else None.
+#     """
+#     try:
+#         # Step 1: Parse the top-level response string as JSON
+#         response_dict = json.loads(raw_response)
+        
+#         # Step 2: Get the actual text from the "response" field
+#         response_text = response_dict.get("response", "")
+        
+#         # Step 3: Extract JSON block enclosed in triple backticks after "summary_json"
+#         match = re.search(r"```(?:json)?\s*({.*?})\s*```", response_text, re.DOTALL)
+        
+#         if match:
+#             json_block = match.group(1)
+#             # Step 4: Parse and return the JSON block
+#             return json.loads(json_block)
+        
+#         # If no match found
+#         return None
+    
+#     except (json.JSONDecodeError, TypeError) as e:
+#         print(f"Error during JSON extraction: {e}")
+#         return None
+
+
 import json
 import re
-from typing import Optional, Dict
+from typing import Optional, Tuple
 
-def extract_summary_json_from_ollama_response(raw_response: str) -> Optional[Dict]:
+def extract_summary_json_from_ollama_response(raw_response: str) -> Tuple[Optional[str], Optional[dict]]:
     """
-    Extracts the summary_json block from Ollama's stringified JSON response.
+    Splits Ollama's stringified JSON response into description text and summary_json dict.
 
     Parameters:
-        raw_response (str): The full response string returned from Ollama.
+        raw_response (str): The full response string from Ollama.
 
     Returns:
-        Optional[Dict]: Parsed summary_json dictionary if found, else None.
+        Tuple[Optional[str], Optional[dict]]: (description_text, summary_json_dict)
     """
     try:
         # Step 1: Parse the top-level response string as JSON
         response_dict = json.loads(raw_response)
-        
-        # Step 2: Get the actual text from the "response" field
         response_text = response_dict.get("response", "")
-        
-        # Step 3: Extract JSON block enclosed in triple backticks after "summary_json"
+
+        # Step 2: Extract JSON block enclosed in triple backticks
         match = re.search(r"```(?:json)?\s*({.*?})\s*```", response_text, re.DOTALL)
-        
+
         if match:
             json_block = match.group(1)
-            # Step 4: Parse and return the JSON block
-            return json.loads(json_block)
+            summary_json = json.loads(json_block)
+
+            # Step 3: Remove the matched JSON block from the response text
+            description_text = response_text.replace(match.group(0), "").strip()
+
+            return description_text, summary_json
         
-        # If no match found
-        return None
-    
+        # If no match, return full response as description and None for JSON
+        return response_text.strip(), None
+
     except (json.JSONDecodeError, TypeError) as e:
-        print(f"Error during JSON extraction: {e}")
-        return None
+        print(f"Error during extraction: {e}")
+        return None, None

@@ -1,6 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
-
+from django.contrib.auth import get_user_model
 # Create your models here.
 class GoldilocksCDP(models.Model):
     name = models.CharField(max_length=255)
@@ -127,3 +127,18 @@ class UserSearchPrompts(models.Model):
 # Chroma API (storage/retrieval)
 # ThesisAI Views
 # Uploaded File data retrieval for thesis ai
+
+
+
+User = get_user_model()
+
+class UserHistory(models.Model):
+    method = models.CharField(max_length=10)
+    path = models.TextField()
+    headers = models.TextField()
+    body = models.TextField(blank=True, null=True)
+    user = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL)
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.method} {self.path} at {self.timestamp}"
