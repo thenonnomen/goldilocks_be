@@ -1,6 +1,6 @@
 import spacy
 import re
-
+import json
 nlp = spacy.load("en_core_web_sm")
 
 # Define custom mappings between terms and model fields
@@ -153,3 +153,48 @@ def extract_filters(prompt: str):
                 break
     # import pdb; pdb.set_trace()
     return filters, limit
+
+
+def extract_bracketed_names(response_text):
+    # Use regex to find content within square brackets
+    match = re.search(r"\[(.*?)\]", response_text, re.DOTALL)
+    if match:
+        # Split the names by comma and strip whitespace
+        return [name.strip() for name in match.group(1).split(',')]
+    return []
+
+import json
+import re
+from typing import Optional, Dict
+
+def extract_summary_json_from_ollama_response(raw_response: str) -> Optional[Dict]:
+    """
+    Extracts the summary_json block from Ollama's stringified JSON response.
+
+    Parameters:
+        raw_response (str): The full response string returned from Ollama.
+
+    Returns:
+        Optional[Dict]: Parsed summary_json dictionary if found, else None.
+    """
+    try:
+        # Step 1: Parse the top-level response string as JSON
+        response_dict = json.loads(raw_response)
+        
+        # Step 2: Get the actual text from the "response" field
+        response_text = response_dict.get("response", "")
+        
+        # Step 3: Extract JSON block enclosed in triple backticks after "summary_json"
+        match = re.search(r"```(?:json)?\s*({.*?})\s*```", response_text, re.DOTALL)
+        
+        if match:
+            json_block = match.group(1)
+            # Step 4: Parse and return the JSON block
+            return json.loads(json_block)
+        
+        # If no match found
+        return None
+    
+    except (json.JSONDecodeError, TypeError) as e:
+        print(f"Error during JSON extraction: {e}")
+        return None

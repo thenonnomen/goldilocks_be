@@ -66,6 +66,7 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
             "user_id": user.id,
             "username": user.username,
         })
+        # Extend the session to DB and store it in db to display in admin panel.
 
         return data
     
