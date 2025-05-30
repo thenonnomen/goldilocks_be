@@ -1,6 +1,6 @@
 from django.contrib import admin
 from cdp.models import (GoldilocksCDP, PrimaryCompanyInfo, SecondaryCompanyInfo, 
-                        BusinessTracker, FinancialInfo, UserSearchPrompts, UserHistory)
+                        BusinessTracker, FinancialInfo, UserSearchPrompts, UserHistory, WatchlistData)
 # Register your models here.
 
 
@@ -40,3 +40,7 @@ class UserHistoryAdmin(admin.ModelAdmin):
     def has_change_permission(self, request, obj=None):
         return False
 admin.site.register(UserHistory, UserHistoryAdmin)
+
+class WatchlistDataAdmin(admin.ModelAdmin):
+    list_display = ['id', 'company_name', 'query_key']
+admin.site.register(WatchlistData, WatchlistDataAdmin)
