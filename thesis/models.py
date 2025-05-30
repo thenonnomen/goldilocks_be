@@ -1,10 +1,18 @@
 from django.db import models
+from multiselectfield import MultiSelectField
+
+THESIS_LIBRARY_TITLES = [
+    ("Profitable Mid-Market FMCG", "Scouting India's ₹50–500 Cr Performers"),
+    ("Beauty in Momentum", "High-Growth Indian Personal Care Brands"),
+    ("Offline Strongholds", "Food Brands Dominating General Trade"),
+]
 
 class ThesisQueryResult(models.Model):
     query = models.TextField()
-    query_key = models.TextField(default='')
+    query_key = MultiSelectField(choices=THESIS_LIBRARY_TITLES, blank=True)
     query_id = models.CharField(max_length=255, unique=True)  # ID from ChromaDB
     created_at = models.DateTimeField(auto_now_add=True)
+    query_stats = models.JSONField(blank=True, null=True)
 
     def __str__(self):
         return f"Query {self.id}: {self.query[:50]}..."
@@ -68,7 +76,7 @@ class ThesisCompanyProfile(models.Model):
     paid_social_visits = models.TextField(blank=True, null=True)
     display_ad_visits = models.TextField(blank=True, null=True)
     average_bounce_rate = models.TextField(blank=True, null=True)
-    query_stats = models.JSONField(blank=True, null=True)
+    query_key = MultiSelectField(choices=THESIS_LIBRARY_TITLES, blank=True)
 
     def __str__(self):
         return self.company_id or "Unknown Company"
