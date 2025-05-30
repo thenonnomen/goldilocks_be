@@ -29,6 +29,8 @@ from urllib3.util.retry import Retry
 from django.http import JsonResponse
 import chromadb
 import time
+from django.views.decorators.csrf import csrf_exempt
+import base64
 
 client = chromadb.Client()
 collection = client.get_or_create_collection(name="user_prompts")
@@ -275,13 +277,13 @@ class PromptQueryAPIView(APIView):
                 "filters": json.dumps(prompt["filters"])
             }]
         )
-        import pdb; pdb.set_trace()
+        # import pdb; pdb.set_trace()
         if len(in_house_data) == 0:
             response_data = {"ollama_data":extracted_companies[0], "orm_data":"No companies were found in the In House Database.", 
                              "fetched_companies":ollama_company_names, "status":200}
         else:
             response_data = {"ollama_data":extracted_companies[0], "orm_data":in_house_data, "fetched_companies":ollama_company_names, "status":200}
-
+        import pdb; pdb.set_trace()
         return JsonResponse(response_data)
     
 class LogoutView(APIView):
@@ -316,3 +318,57 @@ class UserHistoryViewSet(viewsets.ReadOnlyModelViewSet):  # ReadOnly to prevent 
 
     def get_queryset(self):
         return UserHistory.objects.filter(user=self.request.user).order_by('-timestamp')
+    
+
+def my_view(request):
+    context = {'name': 'Django'}
+    return render(request, 'chat.html', context)
+
+@csrf_exempt
+def llm_chat(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            prompt = data.get('prompt')
+
+            models = [
+                "mistralai/devstral-small:free",
+                "deepseek/deepseek-chat:free",
+                "meta-llama/llama-3.3-8b-instruct:free",
+                "qwen/qwen3-8b:free"
+            ]
+
+            url_encoded = "aHR0cHM6Ly9vcGVucm91dGVyLmFpL2FwaS92MS9jaGF0L2NvbXBsZXRpb25z"
+            url = base64.b64decode(url_encoded).decode()
+
+            # API_KEY = "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"
+            API_KEY = "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"
+
+            headers = {
+                "Authorization": f"Bearer {API_KEY}",
+                "Content-Type": "application/json"
+            }
+
+            all_responses = ""
+
+            for model in models:
+                payload = {
+                    "model": model,
+                    "messages": [{"role": "user", "content": prompt}]
+                }
+
+                response = requests.post(url, headers=headers, json=payload)
+                if response.status_code == 200:
+                    model_response = response.json()["choices"][0]["message"]["content"]
+                else:
+                    model_response = f"Error {response.status_code}: {response.text}"
+
+                all_responses += f"\n🔹 Response from {model}:\n\n{model_response}\n"
+
+            html_bolded_text = re.sub(r'\*\*(.*?)\*\*', r'<strong>\1</strong>', all_responses)
+            
+            # import pdb; pdb.set_trace()
+
+            return JsonResponse({"response": html_bolded_text})
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=500)

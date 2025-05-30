@@ -21,7 +21,7 @@ from django.urls import path, include
 from rest_framework import permissions
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
-from cdp.views import ExcelUploadAPIView, PromptQueryAPIView, LogoutView, CustomTokenObtainPairView, CustomTokenRefreshView
+from cdp.views import ExcelUploadAPIView, PromptQueryAPIView, LogoutView, CustomTokenObtainPairView, CustomTokenRefreshView, my_view, llm_chat
 
 schema_view = get_schema_view(
    openapi.Info(
@@ -48,4 +48,8 @@ urlpatterns = [
     path('swagger.json', schema_view.without_ui(cache_timeout=0), name='schema-json'),
     path('upload-excel/', ExcelUploadAPIView.as_view(), name='upload-excel'),
     path("query/", PromptQueryAPIView.as_view(), name="prompt-query"),
+    path('chat', my_view, name='home'),
+    path('llm-chat/', llm_chat, name='llm_chat'),
+    path('emp/', include("handshake.urls")),
+    path('thesis/', include("thesis.urls")),
 ]
