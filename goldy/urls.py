@@ -21,12 +21,17 @@ from django.urls import path, include
 from rest_framework import permissions
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 from cdp.views import ExcelUploadAPIView, PromptQueryAPIView, LogoutView, CustomTokenObtainPairView, CustomTokenRefreshView, my_view, llm_chat
 =======
 from cdp.views import (UserSearchPromptsResultsView, ExcelUploadAPIView, PromptQueryAPIView, LogoutView, 
                         CustomTokenObtainPairView, CustomTokenRefreshView, WatchlistDataExcelUploadAPIView)
 >>>>>>> aee7f3805dc85c1ae2bc3afdedf4615b351a8011
+=======
+from cdp.views import (UserSearchPromptsResultsView, ExcelUploadAPIView, PromptQueryAPIView, LogoutView, 
+                        CustomTokenObtainPairView, CustomTokenRefreshView, WatchlistDataExcelUploadAPIView)
+>>>>>>> Stashed changes
 
 schema_view = get_schema_view(
    openapi.Info(
