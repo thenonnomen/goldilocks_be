@@ -130,14 +130,6 @@ class UserSearchPrompts(models.Model):
         ordering = ['-timestamp']
 
 
-# History API
-# Activity API
-# Chroma API (storage/retrieval)
-# ThesisAI Views
-# Uploaded File data retrieval for thesis ai
-
-
-
 User = get_user_model()
 
 class UserHistory(models.Model):

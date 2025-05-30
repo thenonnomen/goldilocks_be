@@ -1,8 +1,32 @@
-# Create your views here.
-from rest_framework import viewsets
-from .models import (GoldilocksCDP, PrimaryCompanyInfo, SecondaryCompanyInfo, 
-                    FinancialInfo, BusinessTracker, UserSearchPrompts, UserHistory,
-                    WatchlistData, WatchlistInsights)
+# Standard library imports
+import base64
+import json
+import re
+import uuid
+
+# Third-party imports
+import pandas as pd
+import requests
+import chromadb
+from rest_framework import viewsets, status
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework_simplejwt.tokens import RefreshToken, TokenError
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
+from django.http import JsonResponse
+from django.db import DatabaseError, IntegrityError
+from django.views.decorators.csrf import csrf_exempt
+from django.shortcuts import render
+
+# Local imports
+from .models import (
+    GoldilocksCDP, PrimaryCompanyInfo, SecondaryCompanyInfo, 
+    FinancialInfo, BusinessTracker, UserSearchPrompts, UserHistory,
+    WatchlistData, WatchlistInsights
+)
 from .serializers import (  
     GoldilocksCDPSerializer,
     PrimaryCompanyInfoSerializer,
@@ -15,21 +39,7 @@ from .serializers import (
     UserHistorySerializer,
     UserSearchPromptsResultsSerializer
 )
-import pandas as pd
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status, viewsets
 from .nlp_utils import extract_filters, extract_bracketed_names, extract_summary_json_from_ollama_response
-from rest_framework_simplejwt.tokens import RefreshToken, TokenError
-from rest_framework.permissions import IsAuthenticated
-from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
-from requests.adapters import HTTPAdapter
-from urllib3.util.retry import Retry
-from django.http import JsonResponse
-from django.db import DatabaseError, IntegrityError
-from django.views.decorators.csrf import csrf_exempt
-import base64, uuid, chromadb, re, requests, json
-from django.shortcuts import render
 
 client = chromadb.Client()
 collection = client.get_or_create_collection(name="user_prompts")
