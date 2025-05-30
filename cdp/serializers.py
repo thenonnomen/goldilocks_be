@@ -88,3 +88,11 @@ class UserHistorySerializer(serializers.ModelSerializer):
     class Meta:
         model = UserHistory
         fields = ['id', 'method', 'path', 'headers', 'body', 'user', 'timestamp']
+
+class UserSearchPromptsResultsSerializer(serializers.Serializer):
+    query_insight = serializers.ListField(child=serializers.CharField())
+    query_data = serializers.ListField(
+        child=serializers.DictField(
+            child=serializers.CharField(allow_blank=True, allow_null=True)
+        )
+    )

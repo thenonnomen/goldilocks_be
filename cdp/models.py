@@ -1,8 +1,11 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.contrib.auth import get_user_model
+from multiselectfield import MultiSelectField
 # Create your models here.
+
 class GoldilocksCDP(models.Model):
+    """Model to store core company data for GoldilocksCDP."""
     name = models.CharField(max_length=255)
     headquarters = models.CharField(max_length=255, blank=True, null=True)
     revenue = models.JSONField(help_text="Time series data for revenue")
@@ -19,8 +22,7 @@ class GoldilocksCDP(models.Model):
 
     def __str__(self):
         return self.name
-    
-# ====================================================================================================================================
+
 FIDELITY_CHOICES = (
     ("High", "High"),
     ("Medium", "Medium"),
@@ -28,6 +30,7 @@ FIDELITY_CHOICES = (
 )
 
 class PrimaryCompanyInfo(models.Model):
+    """Model to store primary company information."""
     company_name = models.TextField(max_length=255)
     company_domain = models.URLField(max_length=2000)
     linkedin_company_profile = models.URLField(max_length=2000, blank=True, null=True)
@@ -53,6 +56,7 @@ class PrimaryCompanyInfo(models.Model):
 
 
 class SecondaryCompanyInfo(models.Model):
+    """Model to store secondary company information."""
     primary_info = models.OneToOneField(PrimaryCompanyInfo, on_delete=models.CASCADE, related_name='secondary_info')
     employee_count = models.IntegerField(blank=True, null=True)
     about = models.TextField(blank=True, null=True)
@@ -71,6 +75,7 @@ class SecondaryCompanyInfo(models.Model):
 
 
 class FinancialInfo(models.Model):
+    """Model to store financial information for a company."""
     primary_info = models.OneToOneField(PrimaryCompanyInfo, on_delete=models.CASCADE, related_name='financial_info')
     employee_count = models.IntegerField(blank=True, null=True)
     total_funding = models.BigIntegerField(blank=True, null=True)
@@ -85,6 +90,7 @@ class FinancialInfo(models.Model):
 
 
 class BusinessTracker(models.Model):
+    """Model to store business tracker information for a company."""
     primary_info = models.OneToOneField(PrimaryCompanyInfo, on_delete=models.CASCADE, related_name='business_tracker')
     organic_social_visits = models.BigIntegerField(blank=True, null=True)
     organic_search_visits = models.BigIntegerField(blank=True, null=True)
@@ -112,11 +118,13 @@ class BusinessTracker(models.Model):
         return f"Web traffic for {self.primary_info.company_name}"
 
 class UserSearchPrompts(models.Model):
+    """Model to store user search prompts."""
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
     prompt = models.TextField(blank=True, null=True)
     # change to "query_filters"
     query_filters = models.JSONField(blank=True, null=True)
     timestamp = models.DateTimeField(auto_now_add=True)
+    query_key = models.CharField(max_length=255, blank=True, null=True)
 
     class Meta:
         ordering = ['-timestamp']
@@ -133,6 +141,7 @@ class UserSearchPrompts(models.Model):
 User = get_user_model()
 
 class UserHistory(models.Model):
+    """Model to store user request and activity history."""
     method = models.CharField(max_length=10)
     path = models.TextField()
     headers = models.TextField()
@@ -142,3 +151,37 @@ class UserHistory(models.Model):
 
     def __str__(self):
         return f"{self.method} {self.path} at {self.timestamp}"
+
+QUERY_KEY_CHOICES = [
+    ("FMCG Financial Filter", "Show Indian FMCG companies with revenue between ₹50 Cr and ₹500 Cr and EBITDA margins above 15%"),
+    ("Personal Care Growth", "Identify Indian personal care brands with YoY revenue growth over 25% for the last 3 years"),
+    ("Food Channel Mix", "Find Indian mid-sized food brands with >60% revenue from general trade and low digital penetration"),
+    ("Natural Regulatory Brands", "Identify Indian Ayurvedic or natural ingredient-based brands with regulatory certifications"),
+    ("South Regional Focus", "Identify Indian regional brands with strong share in South India and minimal North presence"),
+    ("High Consumer Sentiment", "Identify Indian brands with high consumer sentiment (avg. review >4.2 across marketplaces)"),
+    ("Flagship Product Rating", "Find Indian firms whose flagship product has a 4.5+ rating on Amazon/Flipkart"),
+    ("Bootstrapped Growth Longevity", "Find bootstrapped Indian companies with growing topline and 5+ years of operations"),
+    ("PE Exit Timing", "Identify PE-backed firms in India near the end of a 5-year holding cycle"),
+    ("Tier 2 Expansion", "Find Indian brands expanding from Tier 2 to Tier 1 cities in the last 18 months")
+]
+
+class WatchlistData(models.Model):
+    """Model to store company watchlist data with associated query keys."""
+    company_name = models.CharField(max_length=455)
+    headquarters = models.CharField(max_length=455, blank=True, null=True)
+    company_domain = models.TextField(blank=True, null=True)
+    about = models.TextField(blank=True, null=True)
+    employees = models.CharField(max_length=100, blank=True, null=True)
+    revenue = models.CharField(max_length=100, blank=True, null=True)
+    query_key = MultiSelectField(choices=QUERY_KEY_CHOICES, blank=True)
+
+    def __str__(self):
+        return self.company_name
+
+class WatchlistInsights(models.Model):
+    """Model to store insights for each watchlist entry and query key."""
+    query_key = models.CharField(max_length=455, choices=QUERY_KEY_CHOICES)
+    insights = models.TextField(blank=True, null=True)
+
+    def __str__(self):
+        return f"Insights for {self.watchlist_data.company_name} on {self.query_key}"

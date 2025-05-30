@@ -2,7 +2,7 @@ from rest_framework import routers
 from .views import (
                     GoldilocksCDPViewSet, PrimaryCompanyInfoViewSet,
                     SecondaryCompanyInfoViewSet, FinancialInfoViewSet, 
-                    BusinessTrackerViewSet, UserHistoryViewSet
+                    BusinessTrackerViewSet, UserHistoryViewSet,
                     )
 from django.urls import include, path
 
@@ -14,6 +14,7 @@ router.register(r'sec_company_info', SecondaryCompanyInfoViewSet)
 router.register(r'financial_info', FinancialInfoViewSet)
 router.register(r'business_tracker', BusinessTrackerViewSet)
 router.register(r'user-history', UserHistoryViewSet, basename='user-history')
+
 
 urlpatterns = []
 

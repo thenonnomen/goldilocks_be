@@ -1,9 +1,8 @@
-from django.shortcuts import render
-
 # Create your views here.
 from rest_framework import viewsets
 from .models import (GoldilocksCDP, PrimaryCompanyInfo, SecondaryCompanyInfo, 
-                    FinancialInfo, BusinessTracker, UserSearchPrompts, UserHistory)
+                    FinancialInfo, BusinessTracker, UserSearchPrompts, UserHistory,
+                    WatchlistData, WatchlistInsights)
 from .serializers import (  
     GoldilocksCDPSerializer,
     PrimaryCompanyInfoSerializer,
@@ -14,6 +13,7 @@ from .serializers import (
     CustomTokenObtainPairSerializer,
     CustomTokenRefreshSerializer,
     UserHistorySerializer,
+    UserSearchPromptsResultsSerializer
 )
 import pandas as pd
 from rest_framework.views import APIView
@@ -28,33 +28,41 @@ from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 from django.http import JsonResponse
 import chromadb
-import time
+import uuid
+from django.db import DatabaseError, IntegrityError
 
 client = chromadb.Client()
 collection = client.get_or_create_collection(name="user_prompts")
 
 class GoldilocksCDPViewSet(viewsets.ModelViewSet):
+    """ViewSet for CRUD operations on GoldilocksCDP model."""
     queryset = GoldilocksCDP.objects.all()
     serializer_class = GoldilocksCDPSerializer
 
 class PrimaryCompanyInfoViewSet(viewsets.ModelViewSet):
+    """ViewSet for CRUD operations on PrimaryCompanyInfo model."""
     queryset = PrimaryCompanyInfo.objects.all()
     serializer_class = PrimaryCompanyInfoSerializer
 
 class SecondaryCompanyInfoViewSet(viewsets.ModelViewSet):
+    """ViewSet for CRUD operations on SecondaryCompanyInfo model."""
     queryset = SecondaryCompanyInfo.objects.all()
     serializer_class = SecondaryCompanyInfoSerializer
 
 class FinancialInfoViewSet(viewsets.ModelViewSet):
+    """ViewSet for CRUD operations on FinancialInfo model."""
     queryset = FinancialInfo.objects.all()
     serializer_class = FinancialInfoSerializer
 
 class BusinessTrackerViewSet(viewsets.ModelViewSet):
+    """ViewSet for CRUD operations on BusinessTracker model."""
     queryset = BusinessTracker.objects.all()
     serializer_class = BusinessTrackerSerializer
 
 class ExcelUploadAPIView(APIView):
+    """API view for uploading and processing Excel files to import company data."""
     def post(self, request):
+        """Handle POST requests for uploading and processing Excel files to import company data."""
         serializer = ExcelUploadSerializer(data=request.data)
         if serializer.is_valid():
             file = serializer.validated_data['file']
@@ -86,7 +94,7 @@ class ExcelUploadAPIView(APIView):
                                 'parent_industry_sectors': row.get('Parent Industry - Sectors'),
                             }
                         )
-                    except Exception as e:
+                    except (DatabaseError, IntegrityError, ValueError, TypeError) as e:
                         return Response({"error": str(e)})
                     
 
@@ -108,7 +116,7 @@ class ExcelUploadAPIView(APIView):
                                 'description': row.get('description'),
                             }
                         )
-                    except Exception as e:
+                    except (DatabaseError, IntegrityError, ValueError, TypeError) as e:
                         return Response({"error": str(e)})
                     
                     try:
@@ -126,7 +134,7 @@ class ExcelUploadAPIView(APIView):
                                 'ceo_rating': row.get('Ceo Rating - Ceo'),
                             }
                         )
-                    except Exception as e:
+                    except (DatabaseError, IntegrityError, ValueError, TypeError) as e:
                         return Response({"error": str(e)})
                     
                     try:
@@ -157,47 +165,48 @@ class ExcelUploadAPIView(APIView):
                                 'linkedin_followers': safe_int(row.get('followers')),
                             }
                         )
-                    except Exception as e:
+                    except (DatabaseError, IntegrityError, ValueError, TypeError) as e:
                         return Response({"error": str(e)})
 
-                """
-                Send back the created data as well.
-                """
                 return Response({"message": "Excel data imported successfully."}, status=status.HTTP_201_CREATED)
 
-            except Exception as e:
+            except (DatabaseError, IntegrityError, ValueError, TypeError) as e:
                 return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 
 def clean_funding(val):
+    """Clean and convert a funding value to int, removing non-digit characters."""
     if not val:
         return 0
     try:
         # Remove commas and non-digit characters
         return int(re.sub(r"[^\d]", "", str(val)))
-    except ValueError:
+    except (DatabaseError, IntegrityError, ValueError, TypeError):
         return 0
     
 def safe_int(value, default=0):
+    """Safely convert a value to int, returning default if conversion fails or value is NaN."""
     try:
         if pd.isna(value):  # if using pandas
             return default
         return int(value)
-    except (ValueError, TypeError):
+    except (DatabaseError, IntegrityError, ValueError, TypeError):
         return default
 
 def safe_float(value, default=0.0):
+    """Safely convert a value to float, returning default if conversion fails or value is NaN."""
     try:
         if pd.isna(value):
             return default
         return float(value)
-    except (ValueError, TypeError):
+    except (DatabaseError, IntegrityError, ValueError, TypeError):
         return default
     
 
 def build_augmented_prompt(user_query: str) -> str:
+    """Builds an augmented prompt with instructions for JSON summary extraction."""
     json_instruction = (
         " Please provide a detailed response to the query above. "
         "After your explanation, include a JSON summary of the companies with the following fields: "
@@ -208,7 +217,9 @@ def build_augmented_prompt(user_query: str) -> str:
     return user_query.strip() + json_instruction
 
 class PromptQueryAPIView(APIView):
+    """API view for processing user prompts and returning query results."""
     def post(self, request):
+        """Handle POST requests for processing user prompts and returning query results."""
         prompt = request.data.get("prompt", "")
         filters, limit = extract_filters(prompt['query'])
         queryset = PrimaryCompanyInfo.objects.filter(**filters).distinct()[:limit]
@@ -263,28 +274,41 @@ class PromptQueryAPIView(APIView):
 
         in_house_data = PrimaryCompanyInfo.objects.filter(company_name__in=ollama_company_names)
 
-        chroma_db_id = UserSearchPrompts.objects.filter(user=request.user).latest('timestamp').id
+        unique_id = str(uuid.uuid4())
 
-        unique_id = f"{request.user.id}_{chroma_db_id}_{int(time.time() * 1000)}"
-
+        query_key = request.data.get("query_key", str(uuid.uuid4()))
         add_to_chromadb = collection.add(
-            ids= unique_id,
+            ids=[query_key],
             documents=[prompt["query"]],
             metadatas=[{
+                "query_key": query_key,
                 "query_user_id": request.user.id,
-                "filters": json.dumps(prompt["filters"])
+                "filters": json.dumps(prompt["filters"]),
+                "query_result": ""
             }]
         )
-        import pdb; pdb.set_trace()
+        
+
+
         if len(in_house_data) == 0:
-            response_data = {"ollama_data":extracted_companies[0], "orm_data":"No companies were found in the In House Database.", 
-                             "fetched_companies":ollama_company_names, "status":200}
+            response_data = {
+                "ollama_data": extracted_companies[0],
+                "orm_data": [],  # Changed to an empty list for consistency
+                "fetched_companies": ollama_company_names,
+                "status": 200
+            }
         else:
-            response_data = {"ollama_data":extracted_companies[0], "orm_data":in_house_data, "fetched_companies":ollama_company_names, "status":200}
+            response_data = {
+                "ollama_data": extracted_companies[0],
+                "orm_data": in_house_data,
+                "fetched_companies": ollama_company_names,
+                "status": 200
+            }
 
         return JsonResponse(response_data)
     
 class LogoutView(APIView):
+    """API view to handle user logout and token blacklisting."""
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
@@ -300,19 +324,83 @@ class LogoutView(APIView):
             return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
         
 class CustomTokenObtainPairView(TokenObtainPairView):
+    """API view for obtaining JWT token pairs with custom serializer."""
     serializer_class = CustomTokenObtainPairSerializer
 
 class CustomTokenRefreshView(TokenRefreshView):
+    """API view for refreshing JWT tokens with custom serializer."""
     serializer_class = CustomTokenRefreshSerializer
 
-"""
-Setup Chroma DB, Query API should be processed by NLP, Store filters in UserSearchPrompt Model, Then send query to Ollama, 
-once ollama sends resposnse, Store query in ChromaDB, Then send the Ollama response as API response.
-"""
-
 class UserHistoryViewSet(viewsets.ReadOnlyModelViewSet):  # ReadOnly to prevent POST/PUT/DELETE
+    """ViewSet for retrieving user history records in read-only mode."""
     serializer_class = UserHistorySerializer
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
+        """Return user history records for the authenticated user, ordered by timestamp descending."""
         return UserHistory.objects.filter(user=self.request.user).order_by('-timestamp')
+
+class UserSearchPromptsResultsView(APIView):
+    """API view for retrieving user search prompts results."""
+    serializer_class = UserSearchPromptsResultsSerializer
+    permission_classes = []
+
+    def post(self, request):
+        """Handle GET requests for retrieving user search prompts results."""
+        query_key = request.data.get("query_key", None)
+        query = request.data.get("query", None)
+        if query_key is None:
+            return Response({"error": "Query key is required"}, status=status.HTTP_400_BAD_REQUEST)
+        if query is None:
+            return Response({"error": "Query is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Fetch companies from WatchlistData with the given query_key
+        companies = WatchlistData.objects.filter(query_key__contains=query_key)
+        company_list = []
+        for company in companies:
+            company_list.append({
+                "com_name": company.company_name,
+                "com_hq": company.headquarters,
+                "com_domain": company.company_domain,
+                "com_desc": company.about,
+                "com_emp": company.employees,
+                "com_rev": company.revenue
+            })
+        # Fetch insights from WatchlistInsights with the given query_key
+        insights = WatchlistInsights.objects.filter(query_key=query_key).values_list('insights', flat=True)
+        insights_list = list(insights)
+        response_data = {
+            "query_insight": insights_list,
+            "query_data": company_list
+        }
+        return Response(response_data)
+
+class WatchlistDataExcelUploadAPIView(APIView):
+    """API view for uploading and processing Excel files to import WatchlistData."""
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        """Handle POST requests for uploading and processing Excel files to import WatchlistData."""
+        file = request.FILES.get('file')
+        if not file:
+            return Response({"error": "No file provided."}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            df = pd.read_excel(file)
+            required_columns = [
+                'Company Name', 'Headquarters', 'Company Domain', 'About', 'Employees', 'Revenue'
+            ]
+            for col in required_columns:
+                if col not in df.columns:
+                    return Response({"error": f"Missing required column: {col}"}, status=status.HTTP_400_BAD_REQUEST)
+            for _, row in df.iterrows():
+                WatchlistData.objects.create(
+                    company_name=row['Company Name'],
+                    headquarters=row['Headquarters'],
+                    company_domain=row['Company Domain'],
+                    about=row['About'],
+                    employees=row['Employees'],
+                    revenue=row['Revenue']
+                )
+            return Response({"message": "WatchlistData imported successfully."}, status=status.HTTP_201_CREATED)
+        except (DatabaseError, IntegrityError, ValueError, TypeError) as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
