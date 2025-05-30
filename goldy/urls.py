@@ -21,7 +21,12 @@ from django.urls import path, include
 from rest_framework import permissions
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
+<<<<<<< HEAD
 from cdp.views import ExcelUploadAPIView, PromptQueryAPIView, LogoutView, CustomTokenObtainPairView, CustomTokenRefreshView, my_view, llm_chat
+=======
+from cdp.views import (UserSearchPromptsResultsView, ExcelUploadAPIView, PromptQueryAPIView, LogoutView, 
+                        CustomTokenObtainPairView, CustomTokenRefreshView, WatchlistDataExcelUploadAPIView)
+>>>>>>> aee7f3805dc85c1ae2bc3afdedf4615b351a8011
 
 schema_view = get_schema_view(
    openapi.Info(
@@ -52,4 +57,6 @@ urlpatterns = [
     path('llm-chat/', llm_chat, name='llm_chat'),
     path('emp/', include("handshake.urls")),
     path('thesis/', include("thesis.urls")),
+    path('demo/prompt_results', UserSearchPromptsResultsView.as_view(), name='prompt_results'),
+    path('upload-watchlist-excel/', WatchlistDataExcelUploadAPIView.as_view(), name='upload-watchlist-excel')
 ]
