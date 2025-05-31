@@ -191,42 +191,57 @@ def parse_time_to_minutes(value, default=0.0):
     except:
         return default
     
-QUERY_KEY_TO_SUMMARY = {
-    "FMCG Financial Filter": "Profitable Mid-Market FMCG",
-    "Personal Care Growth": "Beauty in Momentum",
-    "Food Channel Mix": "Offline Strongholds",
-}
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from .models import ThesisCompanyProfile, ThesisLibrary
+from .serializers import ThesisCompanyProfileSerializer, ThesisLibrarySerializer
+from .models import THESIS_LIBRARY_TITLES
+
+# class ThesisQueryAPIView(APIView):
+#     def post(self, request):
+#         query_key_title = request.data.get("query_key")
+#         if not query_key_title:
+#             return Response({"error": "Missing query_key"}, status=status.HTTP_400_BAD_REQUEST)
+
+#         # Validate query_key
+#         valid_titles = [title for title, _ in THESIS_LIBRARY_TITLES]
+#         if query_key_title not in valid_titles:
+#             return Response({"error": "Invalid query_key"}, status=status.HTTP_400_BAD_REQUEST)
+
+#         # Fetch ThesisCompanyProfile with matching query_key
+#         import pdb; pdb.set_trace()
+#         company_profiles = ThesisCompanyProfile.objects.filter(query_key__contains=query_key_title)
+#         company_serializer = ThesisCompanyProfileSerializer(company_profiles, many=True)
+
+#         # Fetch ThesisLibrary with matching query_key via related ThesisQueryResult
+#         thesis_libraries = ThesisLibrary.objects.filter(findings__query_key__contains=query_key_title)
+#         library_serializer = ThesisLibrarySerializer(thesis_libraries, many=True)
+
+#         return Response({
+#             "company_profiles": company_serializer.data,
+#             "thesis_libraries": library_serializer.data
+#         }, status=status.HTTP_200_OK)
+
 
 class ThesisQueryAPIView(APIView):
     def post(self, request):
-        user_id = request.data.get("user_id")
-        query_key = request.data.get("query_key")
-        query = request.data.get("query")
+        query_key_title = request.data.get('query_key')
 
-        # Step 1: Map query_key to ThesisLibrary.finding_summary
-        finding_summary = QUERY_KEY_TO_SUMMARY.get(query_key)
-        if not finding_summary:
-            return Response({"error": "Invalid query_key"}, status=status.HTTP_400_BAD_REQUEST)
+        # Fetch company profiles
+        company_profiles = ThesisCompanyProfile.objects.filter(query_key__contains=query_key_title)
+        company_serializer = ThesisCompanyProfileSerializer(company_profiles, many=True)
 
-        # Step 2: Fetch ThesisLibrary with the mapped finding_summary
-        try:
-            import pdb; pdb.set_trace()
-            thesis_library = ThesisLibrary.objects.get(finding_summary=finding_summary)
-        except ThesisLibrary.DoesNotExist:
-            return Response({"error": "No ThesisLibrary found for the given query_key"}, status=status.HTTP_404_NOT_FOUND)
+        # Fetch thesis library and extract query_stats
+        query_stats = {}
+        thesis_library = ThesisLibrary.objects.filter(
+            title=query_key_title
+        ).select_related('findings').first()
 
-        # Step 3: Fetch matching ThesisCompanyProfile records using query_key in MultiSelectField
-        company_profiles = ThesisCompanyProfile.objects.filter(query_key__contains=[finding_summary])
+        if thesis_library and thesis_library.findings and thesis_library.findings.query_stats:
+            query_stats = thesis_library.findings.query_stats
 
-        # Step 4: Serialize the data
-        library_data = ThesisLibrarySerializer(thesis_library).data
-        companies_data = ThesisCompanyProfileSerializer(company_profiles, many=True).data
-
-        # Step 5: Return response
         return Response({
-            "user_id": user_id,
-            "query": query,
-            "query_key": query_key,
-            "library": library_data,
-            "companies": companies_data
+            "query_data": company_serializer.data,
+            "query_stats": query_stats
         }, status=status.HTTP_200_OK)

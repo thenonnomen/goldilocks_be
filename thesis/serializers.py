@@ -4,7 +4,7 @@ from .models import ThesisLibrary, ThesisQueryResult, ThesisCompanyProfile
 class ThesisQueryResultSerializer(serializers.ModelSerializer):
     class Meta:
         model = ThesisQueryResult
-        fields = ['id', 'query', 'query_id', 'created_at']
+        fields = ['id', 'query', 'query_id', 'created_at', 'query_stats']
 
 class ThesisLibrarySerializer(serializers.ModelSerializer):
     findings = ThesisQueryResultSerializer(read_only=True)
