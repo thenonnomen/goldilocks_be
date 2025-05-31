@@ -1,10 +1,16 @@
 from django.db import models
 from multiselectfield import MultiSelectField
 
+# THESIS_LIBRARY_TITLES = [
+#     ("Profitable Mid-Market FMCG", "Scouting India's ₹50–500 Cr Performers"),
+#     ("Beauty in Momentum", "High-Growth Indian Personal Care Brands"),
+#     ("Offline Strongholds", "Food Brands Dominating General Trade"),
+# ]
+
 THESIS_LIBRARY_TITLES = [
-    ("Profitable Mid-Market FMCG", "Scouting India's ₹50–500 Cr Performers"),
-    ("Beauty in Momentum", "High-Growth Indian Personal Care Brands"),
-    ("Offline Strongholds", "Food Brands Dominating General Trade"),
+    ("Scouting India's ₹50–500 Cr Performers", "Profitable Mid-Market FMCG"),
+    ("High-Growth Indian Personal Care Brands", "Beauty in Momentum"),
+    ("Food Brands Dominating General Trade", "Offline Strongholds"),
 ]
 
 class ThesisQueryResult(models.Model):
@@ -55,8 +61,8 @@ class ThesisCompanyProfile(models.Model):
     parent_website = models.URLField(blank=True, null=True)
     employees = models.TextField(blank=True, null=True)
     employee_count = models.CharField(max_length=50, blank=True, null=True)
-    ceo_name = models.CharField(max_length=255)
-    cfo_name = models.CharField(max_length=255)
+    ceo_name = models.CharField(max_length=255, blank=True, null=True)
+    cfo_name = models.CharField(max_length=255, blank=True, null=True)
     ceo_phone_number = models.CharField(max_length=50, blank=True, null=True)
     ceo_rating = models.CharField(max_length=50, blank=True, null=True)
     linkedin_company_profile = models.URLField(blank=True, null=True)

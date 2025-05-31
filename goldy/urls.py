@@ -24,8 +24,7 @@ from drf_yasg import openapi
 from cdp.views import ExcelUploadAPIView, PromptQueryAPIView, LogoutView, CustomTokenObtainPairView, CustomTokenRefreshView, my_view, llm_chat
 from cdp.views import (UserSearchPromptsResultsView, ExcelUploadAPIView, PromptQueryAPIView, LogoutView, 
                         CustomTokenObtainPairView, CustomTokenRefreshView, WatchlistDataExcelUploadAPIView)
-from cdp.views import (UserSearchPromptsResultsView, ExcelUploadAPIView, PromptQueryAPIView, LogoutView, 
-                        CustomTokenObtainPairView, CustomTokenRefreshView, WatchlistDataExcelUploadAPIView)
+from thesis.views import upload_excel
 
 schema_view = get_schema_view(
    openapi.Info(
@@ -57,5 +56,6 @@ urlpatterns = [
     path('emp/', include("handshake.urls")),
     path('thesis/', include("thesis.urls")),
     path('demo/prompt_results', UserSearchPromptsResultsView.as_view(), name='prompt_results'),
-    path('upload-watchlist-excel/', WatchlistDataExcelUploadAPIView.as_view(), name='upload-watchlist-excel')
+    path('upload-watchlist-excel/', WatchlistDataExcelUploadAPIView.as_view(), name='upload-watchlist-excel'),
+    path("upload-excel2/", upload_excel, name="upload-excel"),
 ]

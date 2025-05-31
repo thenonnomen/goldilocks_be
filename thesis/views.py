@@ -190,3 +190,82 @@ def parse_time_to_minutes(value, default=0.0):
             return float(match.group()) if match else default
     except:
         return default
+
+
+
+
+
+import pandas as pd
+from rest_framework.decorators import api_view, parser_classes
+from rest_framework.parsers import MultiPartParser
+from rest_framework.response import Response
+from rest_framework import status
+from .models import ThesisCompanyProfile
+# from multiselectfield.utils import get_max_choices
+from django.db import IntegrityError
+
+# Map incoming query_key values to internal model values
+QUERY_KEY_MAPPING = {
+    "FMCG Financial Filter": "Profitable Mid-Market FMCG",
+    "Personal Care Growth": "Beauty in Momentum",
+    "Food Channel Mix": "Offline Strongholds"
+}
+
+@api_view(["POST"])
+@parser_classes([MultiPartParser])
+def upload_excel(request):
+    file = request.FILES.get("file")
+    
+    if not file:
+        return Response({"error": "No file provided."}, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        df = pd.read_excel(file)
+
+        for _, row in df.iterrows():
+            query_key_raw = row.get("Query key", "")
+            query_key_mapped = QUERY_KEY_MAPPING.get(query_key_raw, None)
+            
+            profile = ThesisCompanyProfile(
+                company_id=row.get("Company ID"),
+                country_code=row.get("Country Code"),
+                founded=row.get("Founded"),
+                locations=row.get("Locations"),
+                formatted_locations=row.get("Formatted Locations"),
+                about=row.get("About"),
+                description=row.get("Description"),
+                slogan=row.get("Slogan"),
+                specialties=row.get("Specialties"),
+                revenue=str(row.get("Revenue (₹ Cr)", "")),
+                total_funding=str(row.get("Total Funding (₹ Cr)", "")),
+                latest_funding_round=row.get("Latest Funding Round"),
+                funding=str(row.get("Funding (₹ Cr)", "")),
+                investors=row.get("Investors"),
+                stock_info=row.get("Stock Info"),
+                similar_companies=row.get("Similar Companies"),
+                total_users=row.get("Total Users"),
+                average_time_on_site=row.get("Avg Time on Site (min)"),
+                organic_search=row.get("Organic Search"),
+                organic_social_visits=row.get("Organic Social Visits"),
+                paid_search=row.get("Paid Search"),
+                mail_visits=row.get("Mail Visits"),
+                traffic_rank=row.get("Traffic Rank"),
+                referral_visits=row.get("Referral Visits"),
+                parent_website=row.get("Parent Website"),
+                employees=row.get("Employees"),
+                employee_count=row.get("Employee Count"),
+                ceo_name=row.get("CEO Name"),
+                cfo_name=row.get("CFO Name"),
+                ceo_phone_number=row.get("CEO - Phone Number"),
+                ceo_rating=row.get("CEO Rating – CEO"),
+                query_key=[query_key_mapped] if query_key_mapped else [],
+            )
+
+            profile.save()
+
+        return Response({"message": "Upload successful."}, status=status.HTTP_201_CREATED)
+
+    except IntegrityError as e:
+        return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+    except Exception as e:
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
