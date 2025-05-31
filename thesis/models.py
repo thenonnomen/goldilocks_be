@@ -1,17 +1,17 @@
 from django.db import models
 from multiselectfield import MultiSelectField
 
-# THESIS_LIBRARY_TITLES = [
-#     ("Profitable Mid-Market FMCG", "Scouting India's ₹50–500 Cr Performers"),
-#     ("Beauty in Momentum", "High-Growth Indian Personal Care Brands"),
-#     ("Offline Strongholds", "Food Brands Dominating General Trade"),
-# ]
-
 THESIS_LIBRARY_TITLES = [
-    ("Scouting India's ₹50–500 Cr Performers", "Profitable Mid-Market FMCG"),
-    ("High-Growth Indian Personal Care Brands", "Beauty in Momentum"),
-    ("Food Brands Dominating General Trade", "Offline Strongholds"),
+    ("Profitable Mid-Market FMCG", "Scouting India's ₹50–500 Cr Performers"),
+    ("Beauty in Momentum", "High-Growth Indian Personal Care Brands"),
+    ("Offline Strongholds", "Food Brands Dominating General Trade"),
 ]
+
+# THESIS_LIBRARY_TITLES = [
+#     ("Scouting India's ₹50–500 Cr Performers", "Profitable Mid-Market FMCG"),
+#     ("High-Growth Indian Personal Care Brands", "Beauty in Momentum"),
+#     ("Food Brands Dominating General Trade", "Offline Strongholds"),
+# ]
 
 class ThesisQueryResult(models.Model):
     query = models.TextField()
@@ -34,9 +34,10 @@ class ThesisLibrary(models.Model):
         return self.title
 
 class ThesisCompanyProfile(models.Model):
+    company_name = models.CharField(max_length=255, blank=True, null=True)
     company_id = models.CharField(max_length=255, blank=True, null=True)
     country_code = models.CharField(max_length=10, blank=True, null=True)
-    founded = models.DateField(null=True, blank=True)
+    founded = models.CharField(null=True, blank=True)
     locations = models.TextField(blank=True, null=True)
     formatted_locations = models.TextField(blank=True, null=True)
     about = models.TextField(blank=True, null=True)
