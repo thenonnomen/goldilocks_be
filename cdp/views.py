@@ -374,7 +374,9 @@ class UserSearchPromptsResultsView(APIView):
                 "com_domain": company.company_domain,
                 "com_desc": company.about,
                 "com_emp": company.employees,
-                "com_rev": company.revenue
+                "com_rev": company.revenue,
+                "is_public":company.is_public,
+                "priority":company.priority
             })
         # Fetch insights from WatchlistInsights with the given query_key
         insights = WatchlistInsights.objects.filter(query_key=query_key).values_list('insights', flat=True)
@@ -467,16 +469,3 @@ def llm_chat(request):
             return JsonResponse({"response": html_bolded_text})
         except Exception as e:
             return JsonResponse({"error": str(e)}, status=500)
-        
-
-def get_fmgc(request):
-
-    ash = WatchlistData.objects.filter(query_key = ["FMCG Financial Filter"]).values_list('company_name')
-
-    query_list = []
-
-    for ele in ash:
-        for name in ele:
-            query_list.append(name)
-
-    return JsonResponse({"data":query_list})
