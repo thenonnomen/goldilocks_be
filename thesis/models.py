@@ -72,3 +72,6 @@ class ThesisCompanyProfile(models.Model):
 
     def __str__(self):
         return self.company_name or "Unknown Company"
+    
+    class Meta:
+        ordering = ['priority']

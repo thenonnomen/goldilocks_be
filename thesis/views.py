@@ -190,11 +190,16 @@ def parse_time_to_minutes(value, default=0.0):
 class ThesisQueryAPIView(APIView):
     def post(self, request):
         query_key_title = request.data.get('query_key')
+        company_name = request.data.get('company_name')
 
-        # Fetch company profiles
-        company_profiles = ThesisCompanyProfile.objects.filter(query_key__contains=query_key_title)
-        company_serializer = ThesisCompanyProfileSerializer(company_profiles, many=True)
+        if company_name:
+            company_profile = ThesisCompanyProfile.objects.filter(company_name__in = company_name, query_key__contains = query_key_title)
+            company_serializer = ThesisCompanyProfileSerializer(company_profile, many=True)
+        else:
+            company_profiles = ThesisCompanyProfile.objects.filter(query_key__contains=query_key_title)
+            company_serializer = ThesisCompanyProfileSerializer(company_profiles, many=True)
 
+        # import pdb; pdb.set_trace()
         # Fetch thesis library and extract query_stats
         query_stats = {}
         thesis_library = ThesisLibrary.objects.filter(
