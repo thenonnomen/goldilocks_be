@@ -17,6 +17,6 @@ class ThesisLibraryAdmin(admin.ModelAdmin):
 
 @admin.register(ThesisCompanyProfile)
 class ExtendedCompanyProfileAdmin(admin.ModelAdmin):
-    list_display = ('company_id', 'country_code', 'founded', 'ceo_name', 'cfo_name')
+    list_display = ('company_name', 'country_code', 'founded', 'ceo_name', 'cfo_name', 'is_public')
     search_fields = ('company_id', 'ceo_name', 'cfo_name')
     list_filter = ('country_code', 'founded')

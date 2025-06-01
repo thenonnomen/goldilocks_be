@@ -1,6 +1,7 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import ThesisLibraryViewSet, ThesisQueryResultViewSet, ThesisCompanyProfileViewSet, ExcelUploadView, ThesisQueryAPIView
+from .views import (ThesisLibraryViewSet, ThesisQueryResultViewSet, ThesisCompanyProfileViewSet,
+                    ExcelUploadView, ThesisQueryAPIView)
 
 router = DefaultRouter()
 router.register(r'library', ThesisLibraryViewSet, basename='thesislibrary')

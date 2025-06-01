@@ -437,8 +437,8 @@ def llm_chat(request):
             url = base64.b64decode(url_encoded).decode()
 
             # API_KEY = "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"
-            API_KEY = "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"
-
+            # API_KEY = "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"
+            API_KEY = "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"
             headers = {
                 "Authorization": f"Bearer {API_KEY}",
                 "Content-Type": "application/json"
@@ -467,3 +467,16 @@ def llm_chat(request):
             return JsonResponse({"response": html_bolded_text})
         except Exception as e:
             return JsonResponse({"error": str(e)}, status=500)
+        
+
+def get_fmgc(request):
+
+    ash = WatchlistData.objects.filter(query_key = ["FMCG Financial Filter"]).values_list('company_name')
+
+    query_list = []
+
+    for ele in ash:
+        for name in ele:
+            query_list.append(name)
+
+    return JsonResponse({"data":query_list})

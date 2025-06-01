@@ -1,6 +1,7 @@
 from django.db import models
 from cdp.models import PrimaryCompanyInfo
 from django.contrib.auth.models import User
+from thesis.models import ThesisCompanyProfile
 # Create your models here.
 
 class Employee(models.Model):
@@ -40,3 +41,8 @@ class Pathway(models.Model):
 
     def __str__(self):
         return f"{self.relationship} → {self.target_company.name}"
+
+
+class Connection(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='connection_emp')
+    company = models.ForeignKey(ThesisCompanyProfile, on_delete=models.CASCADE, related_name='conectiom_company')

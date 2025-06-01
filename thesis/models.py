@@ -66,24 +66,9 @@ class ThesisCompanyProfile(models.Model):
     cfo_name = models.CharField(max_length=255, blank=True, null=True)
     ceo_phone_number = models.CharField(max_length=50, blank=True, null=True)
     ceo_rating = models.CharField(max_length=50, blank=True, null=True)
-    linkedin_company_profile = models.URLField(blank=True, null=True)
-    crunchbase_url = models.URLField(blank=True, null=True)
-    logo = models.TextField(blank=True, null=True)
-    image = models.TextField(blank=True, null=True)
-    updates = models.TextField(blank=True, null=True)
-    affiliated = models.CharField(max_length=255, blank=True, null=True)
-    get_directions_url = models.URLField(blank=True, null=True)
-    parent_name = models.CharField(max_length=255, blank=True, null=True)
-    youtube_link = models.URLField(blank=True, null=True)
-    twitter_link = models.URLField(blank=True, null=True)
-    facebook_link = models.URLField(blank=True, null=True)
-    sic_code = models.CharField(max_length=50, blank=True, null=True)
-    name_sectors = models.CharField(max_length=255, blank=True, null=True)
-    parent_industry_sectors = models.CharField(max_length=255, blank=True, null=True)
-    paid_social_visits = models.TextField(blank=True, null=True)
-    display_ad_visits = models.TextField(blank=True, null=True)
-    average_bounce_rate = models.TextField(blank=True, null=True)
     query_key = MultiSelectField(choices=THESIS_LIBRARY_TITLES, blank=True)
+    is_public = models.BooleanField(default=False)
+    priority = models.IntegerField(default=31)
 
     def __str__(self):
-        return self.company_id or "Unknown Company"
+        return self.company_name or "Unknown Company"

@@ -42,5 +42,5 @@ class UserHistoryAdmin(admin.ModelAdmin):
 admin.site.register(UserHistory, UserHistoryAdmin)
 
 class WatchlistDataAdmin(admin.ModelAdmin):
-    list_display = ['id', 'company_name', 'query_key']
+    list_display = ['id', 'company_name', 'query_key', 'is_public']
 admin.site.register(WatchlistData, WatchlistDataAdmin)

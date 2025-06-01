@@ -166,6 +166,8 @@ class WatchlistData(models.Model):
     employees = models.CharField(max_length=100, blank=True, null=True)
     revenue = models.CharField(max_length=100, blank=True, null=True)
     query_key = MultiSelectField(choices=QUERY_KEY_CHOICES, blank=True)
+    is_public = models.BooleanField(default=False)
+    priority = models.IntegerField(default=31)
 
     def __str__(self):
         return self.company_name

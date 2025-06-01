@@ -1,16 +1,12 @@
 from rest_framework import viewsets
 from .models import ThesisLibrary, ThesisQueryResult, ThesisCompanyProfile
 from .serializers import ThesisLibrarySerializer, ThesisQueryResultSerializer, ThesisCompanyProfileSerializer
-
-import pandas as pd
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status, permissions
-from .models import ThesisCompanyProfile
 from django.core.files.storage import default_storage
 from django.conf import settings
-import os, re, random
-import uuid
+import os, re, uuid, pandas as pd
 
 class ExcelUploadView(APIView):
     permission_classes = [permissions.AllowAny]
@@ -190,39 +186,6 @@ def parse_time_to_minutes(value, default=0.0):
             return float(match.group()) if match else default
     except:
         return default
-    
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
-from .models import ThesisCompanyProfile, ThesisLibrary
-from .serializers import ThesisCompanyProfileSerializer, ThesisLibrarySerializer
-from .models import THESIS_LIBRARY_TITLES
-
-# class ThesisQueryAPIView(APIView):
-#     def post(self, request):
-#         query_key_title = request.data.get("query_key")
-#         if not query_key_title:
-#             return Response({"error": "Missing query_key"}, status=status.HTTP_400_BAD_REQUEST)
-
-#         # Validate query_key
-#         valid_titles = [title for title, _ in THESIS_LIBRARY_TITLES]
-#         if query_key_title not in valid_titles:
-#             return Response({"error": "Invalid query_key"}, status=status.HTTP_400_BAD_REQUEST)
-
-#         # Fetch ThesisCompanyProfile with matching query_key
-#         import pdb; pdb.set_trace()
-#         company_profiles = ThesisCompanyProfile.objects.filter(query_key__contains=query_key_title)
-#         company_serializer = ThesisCompanyProfileSerializer(company_profiles, many=True)
-
-#         # Fetch ThesisLibrary with matching query_key via related ThesisQueryResult
-#         thesis_libraries = ThesisLibrary.objects.filter(findings__query_key__contains=query_key_title)
-#         library_serializer = ThesisLibrarySerializer(thesis_libraries, many=True)
-
-#         return Response({
-#             "company_profiles": company_serializer.data,
-#             "thesis_libraries": library_serializer.data
-#         }, status=status.HTTP_200_OK)
-
 
 class ThesisQueryAPIView(APIView):
     def post(self, request):

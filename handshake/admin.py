@@ -1,5 +1,6 @@
 from django.contrib import admin
-from .models import Employee, Pathway
+from .models import Employee, Pathway, Connection
+
 # Register your models here.
 @admin.register(Employee)
 class EmployeeAdmin(admin.ModelAdmin):
@@ -26,3 +27,7 @@ class PathwayAdmin(admin.ModelAdmin):
     )
     search_fields = ('relationship', 'target_company__name')
     list_filter = ('connection_strength', 'status')
+
+@admin.register(Connection)
+class ConnectionAdmin(admin.ModelAdmin):
+    list_display = ['user', 'company']
