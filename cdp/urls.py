@@ -3,7 +3,6 @@ from .views import (
                     GoldilocksCDPViewSet, PrimaryCompanyInfoViewSet,
                     SecondaryCompanyInfoViewSet, FinancialInfoViewSet, 
                     BusinessTrackerViewSet, UserHistoryViewSet,
-                    get_fmgc
                     )
 from django.urls import include, path
 
@@ -17,6 +16,4 @@ router.register(r'business_tracker', BusinessTrackerViewSet)
 router.register(r'user-history', UserHistoryViewSet, basename='user-history')
 
 
-urlpatterns = [
-    path('get_company/', get_fmgc, name='thesis-query'),
-]
+urlpatterns = []
