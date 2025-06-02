@@ -188,6 +188,7 @@ def parse_time_to_minutes(value, default=0.0):
         return default
 
 class ThesisQueryAPIView(APIView):
+    permission_classes = [permissions.AllowAny]
     def post(self, request):
         query_key_title = request.data.get('query_key')
         company_name = request.data.get('company_name')
@@ -213,3 +214,20 @@ class ThesisQueryAPIView(APIView):
             "query_data": company_serializer.data,
             "query_stats": query_stats
         }, status=status.HTTP_200_OK)
+    
+def update_company(request):
+    public_companies = [
+        "Vadilal Industries",
+        "ADF Foods (Ashoka, Aeroplane)",
+        "Surya Roshni (Food Division)",
+        "Jain Irrigation Systems (Food Division)",
+        "Mamaearth (Honasa Consumer Ltd.)",
+        "The Derma Co. (Honasa Consumer Ltd.)",
+        "Aqualogica (Honasa Consumer Ltd.)",
+        "Dr. Sheth's (Honasa Consumer Ltd.)"
+    ]
+
+
+    ThesisCompanyProfile.objects.filter(company_name__in = public_companies).update(is_public = True)
+
+    return Response({}, status=status.HTTP_200_OK)

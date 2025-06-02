@@ -5,6 +5,7 @@ THESIS_LIBRARY_TITLES = [
     ("Profitable Mid-Market FMCG", "Scouting India's ₹50–500 Cr Performers"),
     ("Beauty in Momentum", "High-Growth Indian Personal Care Brands"),
     ("Offline Strongholds", "Food Brands Dominating General Trade"),
+    ("Custom Watchlist Demo", "Show Indian FMCG companies with revenue between ₹50 Cr and ₹500 Cr and EBITDA margins above 15%"),
 ]
 
 # THESIS_LIBRARY_TITLES = [

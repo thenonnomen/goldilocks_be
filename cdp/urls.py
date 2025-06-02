@@ -15,5 +15,4 @@ router.register(r'financial_info', FinancialInfoViewSet)
 router.register(r'business_tracker', BusinessTrackerViewSet)
 router.register(r'user-history', UserHistoryViewSet, basename='user-history')
 
-
 urlpatterns = []

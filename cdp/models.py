@@ -8,7 +8,7 @@ class GoldilocksCDP(models.Model):
     """Model to store core company data for GoldilocksCDP."""
     name = models.CharField(max_length=255)
     headquarters = models.CharField(max_length=255, blank=True, null=True)
-    revenue = models.JSONField(help_text="Time series data for revenue")
+    revenue = models.CharField(max_length=255, blank=True, null=True)
     industry = models.CharField(max_length=255, blank=True, null=True)
     ceo = models.CharField(max_length=255, blank=True, null=True)
     cfo = models.CharField(max_length=255, blank=True, null=True)

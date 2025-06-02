@@ -27,7 +27,7 @@ SECRET_KEY = 'django-insecure-g%c4rk^(t5b=3s2=ry2*5_v%5$wdqp0lcp)^3kz2kwgtni0s6)
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['abnormally-top-porpoise.ngrok-free.app', "localhost"]
 
 
 # Application definition
@@ -67,6 +67,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'corsheaders.middleware.CorsMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'cdp.middleware.RequestLoggingMiddleware', #Custom middleware to store user actions.
 ]
 
@@ -89,6 +90,12 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'goldy.wsgi.application'
 
+import os
+os.environ.setdefault("PGDATABASE", "goldilocks_cdp")
+os.environ.setdefault("PGUSER", "postgres")
+os.environ.setdefault("PGPASSWORD", "123")
+os.environ.setdefault("PGHOST", "localhost")
+os.environ.setdefault("PGPORT", "5432")
 
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
@@ -96,11 +103,11 @@ WSGI_APPLICATION = 'goldy.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'goldilocks_cdp',
-        'USER': 'postgres',
-        'PASSWORD': '123',
-        'HOST': 'localhost',
-        'PORT': '5432',
+        'NAME': os.environ["PGDATABASE"],
+        'USER': os.environ["PGUSER"],
+        'PASSWORD': os.environ["PGPASSWORD"],
+        'HOST': os.environ["PGHOST"],
+        'PORT': os.environ["PGPORT"],
     }
 }
 
@@ -140,11 +147,10 @@ CORS_ALLOW_ALL_ORIGINS = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
-STATIC_URL = '/static/'
+STATIC_URL = 'static/'
 
-STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'static'),
-]
+STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
+STATICFILES_DIRS = [os.path.join(BASE_DIR, "static")]
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
