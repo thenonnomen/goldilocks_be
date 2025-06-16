@@ -154,7 +154,9 @@ QUERY_KEY_CHOICES = [
     ("Flagship Product Rating", "Find Indian firms whose flagship product has a 4.5+ rating on Amazon/Flipkart"),
     ("Bootstrapped Growth Longevity", "Find bootstrapped Indian companies with growing topline and 5+ years of operations"),
     ("PE Exit Timing", "Identify PE-backed firms in India near the end of a 5-year holding cycle"),
-    ("Tier 2 Expansion", "Find Indian brands expanding from Tier 2 to Tier 1 cities in the last 18 months")
+    ("Tier 2 Expansion", "Find Indian brands expanding from Tier 2 to Tier 1 cities in the last 18 months"),
+    ("Tier2 Personal Growth", "Among these, identify personal care brands with a high Tier 2 city presence and consistent YoY growth over the last 3 years."),
+    ("Ayurvedic Skincare Niche", "From these, highlight Ayurvedic or plant-based skincare brands targeting women aged 25–40, with flagship products rated 4.5+ on Amazon or Nykaa.")
 ]
 
 class WatchlistData(models.Model):

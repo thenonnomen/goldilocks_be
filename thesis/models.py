@@ -2,10 +2,19 @@ from django.db import models
 from multiselectfield import MultiSelectField
 
 THESIS_LIBRARY_TITLES = [
+    # FMCG THEME VIEWS ###
     ("Profitable Mid-Market FMCG", "Scouting India's ₹50–500 Cr Performers"),
     ("Beauty in Momentum", "High-Growth Indian Personal Care Brands"),
     ("Offline Strongholds", "Food Brands Dominating General Trade"),
-    ("Custom Watchlist Demo", "Show Indian FMCG companies with revenue between ₹50 Cr and ₹500 Cr and EBITDA margins above 15%"),
+    # REAL ESTATE THEME VIEWS ###
+    ("Roofing Material Leaders", "Scouting India's ₹50–500 Cr Roofing Manufacturers"),
+    ("Tier 2 Roofing Expansion", "Roofing Brands Growing in Tier 2 & Tier 3 Cities"),
+    ("Innovative Roofing Tech", "Solar, Modular & Smart Roofing Platforms"),
+    # US v1 THEME VIEWS ###
+    ("Distributed Infra Platforms", "US Platforms Aggregating Solar, Towers, Fiber, Water"),
+    ("Storage & Trailer Rollups", "Consolidating U.S. Self-Storage & Trailer Leasing"),
+    ("C&I Solar Expansion", "Commercial Solar Developers with Recurring Revenue"),
+    ("High-Occupancy Storage", "Top Storage Rollups with 85%+ Utilization"),
 ]
 
 # THESIS_LIBRARY_TITLES = [
