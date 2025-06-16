@@ -24,6 +24,7 @@ THESIS_LIBRARY_TITLES = [
 # ]
 
 class ThesisQueryResult(models.Model):
+    """Model to store Thesis query results."""
     query = models.TextField()
     query_key = MultiSelectField(choices=THESIS_LIBRARY_TITLES, blank=True)
     query_id = models.CharField(max_length=255, unique=True)  # ID from ChromaDB
@@ -34,6 +35,7 @@ class ThesisQueryResult(models.Model):
         return f"Query {self.id}: {self.query[:50]}..."
 
 class ThesisLibrary(models.Model):
+    """Model to store Thesis Views."""
     title = models.CharField(max_length=255)
     description = models.TextField()
     finding_summary = models.CharField(max_length=255)  # single-line summary
@@ -44,6 +46,7 @@ class ThesisLibrary(models.Model):
         return self.title
 
 class ThesisCompanyProfile(models.Model):
+    """Model to store company profile data for thesis analysis and tracking."""
     company_name = models.CharField(max_length=255, blank=True, null=True)
     company_id = models.CharField(max_length=255, blank=True, null=True)
     country_code = models.CharField(max_length=10, blank=True, null=True)
@@ -82,6 +85,6 @@ class ThesisCompanyProfile(models.Model):
 
     def __str__(self):
         return self.company_name or "Unknown Company"
-    
+  
     class Meta:
         ordering = ['priority']
