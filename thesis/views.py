@@ -191,16 +191,11 @@ class ThesisQueryAPIView(APIView):
     permission_classes = [permissions.AllowAny]
     def post(self, request):
         query_key_title = request.data.get('query_key')
-        company_name = request.data.get('company_name')
 
-        if company_name:
-            company_profile = ThesisCompanyProfile.objects.filter(company_name__in = company_name, query_key__contains = query_key_title)
-            company_serializer = ThesisCompanyProfileSerializer(company_profile, many=True)
-        else:
-            company_profiles = ThesisCompanyProfile.objects.filter(query_key__contains=query_key_title)
-            company_serializer = ThesisCompanyProfileSerializer(company_profiles, many=True)
+        # Fetch company profiles
+        company_profiles = ThesisCompanyProfile.objects.filter(query_key__contains=query_key_title).exclude(is_public=True)
+        company_serializer = ThesisCompanyProfileSerializer(company_profiles, many=True)
 
-        # import pdb; pdb.set_trace()
         # Fetch thesis library and extract query_stats
         query_stats = {}
         thesis_library = ThesisLibrary.objects.filter(
@@ -215,19 +210,3 @@ class ThesisQueryAPIView(APIView):
             "query_stats": query_stats
         }, status=status.HTTP_200_OK)
     
-def update_company(request):
-    public_companies = [
-        "Vadilal Industries",
-        "ADF Foods (Ashoka, Aeroplane)",
-        "Surya Roshni (Food Division)",
-        "Jain Irrigation Systems (Food Division)",
-        "Mamaearth (Honasa Consumer Ltd.)",
-        "The Derma Co. (Honasa Consumer Ltd.)",
-        "Aqualogica (Honasa Consumer Ltd.)",
-        "Dr. Sheth's (Honasa Consumer Ltd.)"
-    ]
-
-
-    ThesisCompanyProfile.objects.filter(company_name__in = public_companies).update(is_public = True)
-
-    return Response({}, status=status.HTTP_200_OK)

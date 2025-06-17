@@ -365,7 +365,7 @@ class UserSearchPromptsResultsView(APIView):
             return Response({"error": "Query is required"}, status=status.HTTP_400_BAD_REQUEST)
 
         # Fetch companies from WatchlistData with the given query_key
-        companies = WatchlistData.objects.filter(query_key__contains=query_key)
+        companies = WatchlistData.objects.filter(query_key__contains=query_key).exclude(is_public=True)
         company_list = []
         for company in companies:
             company_list.append({
