@@ -169,7 +169,9 @@ SIMPLE_JWT = {
 }
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'localhost'
-EMAIL_PORT = 1025
-EMAIL_USE_TLS = False
-DEFAULT_FROM_EMAIL = 'test@example.com'
+EMAIL_HOST = 'smtp-relay.brevo.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = '8f991a001@smtp-brevo.com'
+EMAIL_HOST_PASSWORD = '5bCyx8PRWQMN6qvJ'
+DEFAULT_FROM_EMAIL = 'akashsivaramakrishnan96@gmail.com'
