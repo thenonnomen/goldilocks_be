@@ -56,4 +56,5 @@ urlpatterns = [
     path('thesis/', include("thesis.urls")),
     path('demo/prompt_results', UserSearchPromptsResultsView.as_view(), name='prompt_results'),
     path('upload-watchlist-excel/', WatchlistDataExcelUploadAPIView.as_view(), name='upload-watchlist-excel'),
+    path('mail/', include("mailing.urls")),
 ]

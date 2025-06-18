@@ -27,7 +27,7 @@ SECRET_KEY = 'django-insecure-g%c4rk^(t5b=3s2=ry2*5_v%5$wdqp0lcp)^3kz2kwgtni0s6)
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['abnormally-top-porpoise.ngrok-free.app', "localhost"]
+ALLOWED_HOSTS = []
 
 
 # Application definition
@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'cdp',
     'handshake',
     'thesis',
+    'mailing',
 ]
 
 REST_FRAMEWORK = {
@@ -166,3 +167,9 @@ SIMPLE_JWT = {
     'BLACKLIST_AFTER_ROTATION': True,
     'ROTATE_REFRESH_TOKENS': True,
 }
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'localhost'
+EMAIL_PORT = 1025
+EMAIL_USE_TLS = False
+DEFAULT_FROM_EMAIL = 'test@example.com'
